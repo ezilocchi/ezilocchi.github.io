@@ -1,4 +1,19 @@
+<script src="{{ root_url }}/javascripts/jquery.gravatar.min.js"></script>
+
 <section>
   <h1>About Me</h1>
-  <p>A little something about me.</p>
+  <div class="gravatar">
+    <div class="displayName"></div>
+    <div class="email"></div>
+    <div>
+      <div class="thumbnailUrl" style="width:40%; float:left; padding-top:10px"></div>
+      <div class="urls" style="width:60%; float:left"></div>
+    </div>
+  </div>
+
+  <script>
+    jQuery(function($) {
+      $('.gravatar').gravatar('ezilocchi');
+    });
+  </script>
 </section>
