@@ -16,7 +16,8 @@ connects with MongoDB. The gems involve are:
 * **Slim**: An alternative template engine to ERB (the Rails default one).
 * **Rspec**: A BDD gem to express the tests as specifications
 * **Cucumber**: A BBD gem to express the acceptance tests in Gherkin Syntax
-NOTE:  You can find the source code for this tutorial here
+
+NOTE: You can find the source code for this tutorial [here](https://github.com/ezilocchi/rails_with_mongo_example)
 
 Technology Stack: **MongoDB**, **Ruby**, **Rails**, **GIT (Optional)**, **VIM (Optional)**
 
