@@ -15,11 +15,7 @@ This is just an example project showing how to get a **Ruby on Rails** environme
 * **Nodejs** (since it’s the most popular and stable JS engine)
 * **Git** (it doesn’t need any explanation)
 
-<!-- more -->
-
-Any contribution to improve it (like proposing a better way of writing
-the config) or add more features (like supporting others linux
-distributions) is very welcomed :).
+Any contribution to improve it (like proposing a better way of writing the config) or add more features (like supporting others linux distributions) is very welcomed :).
 
 So basically you can run this command from your terminal:
 
@@ -28,6 +24,8 @@ sudo curl https://raw.github.com/ezilocchi/my-puppet-conf/master/install.sh | ba
 ```
 
 or you can go to the [github repo](http://github.com/ezilocchi/my-puppet-conf) and see how it works
+
+<!-- more -->
 
 Long story
 ----------
