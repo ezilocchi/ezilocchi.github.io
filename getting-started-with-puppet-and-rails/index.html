@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Getting Started With Puppet and Rails - Just Some More Devs Ideas</title>
+  <meta name="author" content="Emiliano Zilocchi">
+
+  
+  <meta name="description" content="This is just an example project showing how to get a Ruby on Rails environment up and running with just one command line using Puppet. It was &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ezilocchi.github.io/getting-started-with-puppet-and-rails">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Just Some More Devs Ideas" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-48332293-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Just Some More Devs Ideas</a></h1>
+  
+    <h2>By Emiliano Zilocchi</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:ezilocchi.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Getting Started With Puppet and Rails</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-23T20:51:04-03:00" pubdate data-updated="true">Dec 23<span>rd</span>, 2013</time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://ezilocchi.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This is just an example project showing how to get a <strong>Ruby on Rails</strong> environment up and running with just one command line using <strong>Puppet</strong>. It was original created for (but it can be easily modified to run with other setups):</p>
+
+<ul>
+<li><strong>Ubuntu</strong> 13.10 (since it’s one of the most supported distros in the linux community)</li>
+<li><strong>Rbenv</strong> as Ruby manager (there is no way of developing ruby without a Ruby Version Manager. You can user RVM as well)</li>
+<li><strong>Postgresql</strong> (since it’s 100% open source and it’s the <em><a href="http://www.heroku.com" target="_blank">heroku</a></em> default)</li>
+<li><strong>VIM</strong> (with <em><a href="https://github.com/carlhuda/janus" target="_blank">janus</a></em> distribution)</li>
+<li><strong>Nodejs</strong> (since it’s the most popular and stable JS engine)</li>
+<li><strong>Git</strong> (it doesn’t need any explanation)</li>
+</ul>
+
+
+<p>Any contribution to improve it (like proposing a better way of writing the config) or add more features (like supporting others linux distributions) is very welcomed :).</p>
+
+<p>So basically you can run this command from your terminal:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo curl https://raw.github.com/ezilocchi/my-puppet-conf/master/install.sh | bash</span></code></pre></td></tr></table></div></figure>
+
+
+<p>or you can go to the <a href="http://github.com/ezilocchi/my-puppet-conf">github repo</a> and see how it works</p>
+
+<!-- more -->
+
+
+<h2>Long story</h2>
+
+<p>During the last 6 month I had to set the development environment in my laptop 3 times. First I got a new job as freelance developer and I had to follow a step by step document to convert my machine into a full developer workstation. Then my hard drive broke and I had to set everything again, following every little step, running every command from the console. Finally I got a new laptop, an amazing Dell XPS, and guess what I went to that setup document one more time. Actually the story doesn’t end there, some months later two other devs joined the project and they were able to run this command instead of follow the whole document. At some point this  became something useful</p>
+
+<p>So my first attempt was to create a shell script, something that you can run from the console and automatically sets everything. But then I remembered puppet, I used it in a project but I’ve never configured it by my own (only run <code>puppet agent</code>). Usually devops are who handle this kind of things, not developers.</p>
+
+<p>This is just a puppet config that I created as a self learning project that has grown with the time and helps other devs on this project to set up their own environments.</p>
+
+<p>IMPORTANT: The final purpose of puppet it’s much larger than this. The idea it’s to stay in sync all your <strong>environments (demo, stage, prod, etc…)</strong> and avoid any kind of configuration issues during deployment, among other things. But as I mentioned before this started as a learning experience but ends up in something useful for this project.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Emiliano Zilocchi</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-23T20:51:04-03:00" pubdate data-updated="true">Dec 23<span>rd</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/puppet/'>Puppet</a>, <a class='category' href='/blog/categories/rails/'>Rails</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ubuntu/'>Ubuntu</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ezilocchi.github.io/getting-started-with-puppet-and-rails/" data-via="ezilocchi" data-counturl="http://ezilocchi.github.io/getting-started-with-puppet-and-rails/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/line-too-long-on-jslint-and-jshint/" title="Previous Post: Line Too Long on jsLint and jsHint">&laquo; Line Too Long on jsLint and jsHint</a>
+      
+      
+        <a class="basic-alignment right" href="/getting-started-with-octopress/" title="Next Post: Getting Started with Octopress">Getting Started with Octopress &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/managing-sidekiq-with-upstart/">Managing Sidekiq With Upstart</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-octopress/">Getting Started With Octopress</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-puppet-and-rails/">Getting Started With Puppet and Rails</a>
+      </li>
+    
+      <li class="post">
+        <a href="/line-too-long-on-jslint-and-jshint/">Line Too Long on jsLint and jsHint</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-rails-4-with-mongodb/">Getting Started Rails 4 With Mongodb</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/ezilocchi?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Emiliano Zilocchi -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'ezilocchi';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://ezilocchi.github.io/getting-started-with-puppet-and-rails/';
+        var disqus_url = 'http://ezilocchi.github.io/getting-started-with-puppet-and-rails/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

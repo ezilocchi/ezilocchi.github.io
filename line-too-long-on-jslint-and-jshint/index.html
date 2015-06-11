@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Line Too Long on jsLint and jsHint - Just Some More Devs Ideas</title>
+  <meta name="author" content="Emiliano Zilocchi">
+
+  
+  <meta name="description" content="This is just another approach to fix the famous Line too long on JShint or JSlint complain. NOTE: this started as an answer for this Stackoverflow &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Just Some More Devs Ideas" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-48332293-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Just Some More Devs Ideas</a></h1>
+  
+    <h2>By Emiliano Zilocchi</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:ezilocchi.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Line Too Long on jsLint and jsHint</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-16T10:36:07-03:00" pubdate data-updated="true">Sep 16<span>th</span>, 2013</time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://ezilocchi.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This is just another approach to fix the famous Line too long on JShint or JSlint complain.</p>
+
+<blockquote><p>NOTE: this started as an answer for this <a href="http://stackoverflow.com/questions/9570207/whats-the-jslint-approved-way-of-creating-a-long-string/">Stackoverflow
+question</a>.</p></blockquote>
+
+<p>The thing is what to do with those long strings that throw a <strong>Line too long</strong> complain but it still makes sense to have them in that way. Think in examples like an URL or a HASH / SHA.</p>
+
+<p>First of all, it’s important to agree that there is no “one solution” for this situation and second of all that it’s a matter of design more than a technical issue. It’s true that sometimes it makes sense to split these kind of strings into several lines, such as <strong>HTML</strong> code representations, but sometimes it doesn’t as in the example of an URL, a <strong>HASH / SHA</strong> string or even paragraphs.</p>
+
+<!-- more -->
+
+
+<p>So the first attempt to add the <code>/* jshint maxlen: 130 */</code> option on top of your JS file will fix the problem, omitting the <strong>Line Too Long</strong> complains only on that file. But what about other lines on the same file, that are too long as well but they should be shorter, basically a valid concern from <strong>jsHint</strong>.</p>
+
+<p>Since most of the cases where we want to keep the line as it is, no matter the length, are related to string representations like URLs, HASHs, SHAs and so on, using a placeholder could be a good approach.  Basically the idea is to create a JS file to store them and make it available through a global variable. Then you can just call it from any script across your site, like the way jQuery is used (Just remember that you need to load placeholder file before scripts that use it). The advantage about this solution is that you need to avoid this maxlen validation only in one file (Actually we are setting the maxlen to a very high number).</p>
+
+<figure class='code'><figcaption><span>my_placeholder.js</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="cm">/*jslint maxlen: 500 */</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Init the placeholder for My Feature</span>
+</span><span class='line'><span class="nx">MyFeature</span> <span class="o">=</span> <span class="nx">MyFeature</span> <span class="o">||</span> <span class="p">{};</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign URL</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">productApiURL</span> <span class="o">=</span> <span class="s1">&#39;http://this.is.the.url.to/product/API/&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign a piece of TEXT</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">productTermsOfUseText</span> <span class="o">=</span> <span class="s1">&#39;This is a very long text about</span>
+</span><span class='line'><span class="s1">something that you want to explain regarding your product terms of use</span>
+</span><span class='line'><span class="s1">for example......&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign an HTML fragment</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">successfulMessageHTML</span> <span class="o">=</span><span class="s1">&#39;&lt;/pre&gt;&lt;div class=&quot;message&quot;&gt;&lt;div</span>
+</span><span class='line'><span class="s1">lass=&quot;header&quot;&gt;Successfully reated&lt;/div&gt;&lt;div class=&quot;detail&quot;&gt;some text</span>
+</span><span class='line'><span class="s1">showing the detail...&lt;/div&gt;&lt;/div&gt;&lt;pre&gt;&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign a Regex to perform some validation</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">validEmailRegex</span> <span class="o">=</span> <span class="k">new</span>
+</span><span class='line'><span class="nb">RegExp</span><span class="p">(</span><span class="sr">/^(([^&lt;&gt;()[\]\\.,;:\s@\&quot;]+(\.[^&lt;&gt;()[\]\\.,;:\s@\&quot;]+)*)|(\&quot;.+\&quot;))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-AZ\-0-9]+\.)+[a-zA-Z]{2,}))$/</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>my_feature_related_file.js</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">//doing random awesome things</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">url</span><span class="o">:</span> <span class="nx">MyFeature</span><span class="p">.</span><span class="nx">productApiURL</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#message_container&#39;</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">successfulMessageHTML</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//more awesome code here</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally another good thing about this approach is that we are reinforcing the semantic meaning of those long strings. Anyone can understand that MyFeature.productApiURL represents the URL product API or that MyFeature.successfulMessageHTML is the HTML code for a successful message for My Feature. Basically we are explaining what it means in <strong>terms of domain</strong> (Successful Message, Product API, Valid Email…) and <strong>in which format it is represented</strong> (HTML, URL, REGEX…).</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Emiliano Zilocchi</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-16T10:36:07-03:00" pubdate data-updated="true">Sep 16<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/code-quality/'>Code Quality</a>, <a class='category' href='/blog/categories/javasctipt/'>JavaSctipt</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint/" data-via="ezilocchi" data-counturl="http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/getting-started-rails-4-with-mongodb/" title="Previous Post: getting started rails 4 with mongodb">&laquo; getting started rails 4 with mongodb</a>
+      
+      
+        <a class="basic-alignment right" href="/getting-started-with-puppet-and-rails/" title="Next Post: Getting Started with Puppet and Rails">Getting Started with Puppet and Rails &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/managing-sidekiq-with-upstart/">Managing Sidekiq With Upstart</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-octopress/">Getting Started With Octopress</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-puppet-and-rails/">Getting Started With Puppet and Rails</a>
+      </li>
+    
+      <li class="post">
+        <a href="/line-too-long-on-jslint-and-jshint/">Line Too Long on jsLint and jsHint</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-rails-4-with-mongodb/">Getting Started Rails 4 With Mongodb</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/ezilocchi?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Emiliano Zilocchi -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'ezilocchi';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint/';
+        var disqus_url = 'http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

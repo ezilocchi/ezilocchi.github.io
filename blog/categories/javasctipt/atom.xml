@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: JavaSctipt | Just Some More Devs Ideas]]></title>
+  <link href="http://ezilocchi.github.io/blog/categories/javasctipt/atom.xml" rel="self"/>
+  <link href="http://ezilocchi.github.io/"/>
+  <updated>2015-06-11T11:53:46-03:00</updated>
+  <id>http://ezilocchi.github.io/</id>
+  <author>
+    <name><![CDATA[Emiliano Zilocchi]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Line Too Long on jsLint and jsHint]]></title>
+    <link href="http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint/"/>
+    <updated>2013-09-16T10:36:07-03:00</updated>
+    <id>http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint</id>
+    <content type="html"><![CDATA[<p>This is just another approach to fix the famous Line too long on JShint or JSlint complain.</p>
+
+<blockquote><p>NOTE: this started as an answer for this <a href="http://stackoverflow.com/questions/9570207/whats-the-jslint-approved-way-of-creating-a-long-string/">Stackoverflow
+question</a>.</p></blockquote>
+
+<p>The thing is what to do with those long strings that throw a <strong>Line too long</strong> complain but it still makes sense to have them in that way. Think in examples like an URL or a HASH / SHA.</p>
+
+<p>First of all, it’s important to agree that there is no “one solution” for this situation and second of all that it’s a matter of design more than a technical issue. It’s true that sometimes it makes sense to split these kind of strings into several lines, such as <strong>HTML</strong> code representations, but sometimes it doesn’t as in the example of an URL, a <strong>HASH / SHA</strong> string or even paragraphs.</p>
+
+<!-- more -->
+
+
+<p>So the first attempt to add the <code>/* jshint maxlen: 130 */</code> option on top of your JS file will fix the problem, omitting the <strong>Line Too Long</strong> complains only on that file. But what about other lines on the same file, that are too long as well but they should be shorter, basically a valid concern from <strong>jsHint</strong>.</p>
+
+<p>Since most of the cases where we want to keep the line as it is, no matter the length, are related to string representations like URLs, HASHs, SHAs and so on, using a placeholder could be a good approach.  Basically the idea is to create a JS file to store them and make it available through a global variable. Then you can just call it from any script across your site, like the way jQuery is used (Just remember that you need to load placeholder file before scripts that use it). The advantage about this solution is that you need to avoid this maxlen validation only in one file (Actually we are setting the maxlen to a very high number).</p>
+
+<p><code>javascript my_placeholder.js
+/*jslint maxlen: 500 */
+ 
+//Init the placeholder for My Feature
+MyFeature = MyFeature || {};
+ 
+//Assign URL
+MyFeature.productApiURL = 'http://this.is.the.url.to/product/API/';
+ 
+//Assign a piece of TEXT
+MyFeature.productTermsOfUseText = 'This is a very long text about
+something that you want to explain regarding your product terms of use
+for example......';
+ 
+//Assign an HTML fragment
+MyFeature.successfulMessageHTML ='&lt;/pre&gt;&lt;div class="message"&gt;&lt;div
+lass="header"&gt;Successfully reated&lt;/div&gt;&lt;div class="detail"&gt;some text
+showing the detail...&lt;/div&gt;&lt;/div&gt;&lt;pre&gt;';
+ 
+//Assign a Regex to perform some validation
+MyFeature.validEmailRegex = new
+RegExp(/^(([^&lt;&gt;()[\]\\.,;:\s@\"]+(\.[^&lt;&gt;()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-AZ\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+</code></p>
+
+<p>``` javascript my_feature_related_file.js
+//doing random awesome things</p>
+
+<p>$.ajax({
+  url: MyFeature.productApiURL,
+  success: function() {</p>
+
+<pre><code>$('#message_container').html(MyFeature.successfulMessageHTML);
+</code></pre>
+
+<p>  }
+});</p>
+
+<p>//more awesome code here
+```</p>
+
+<p>Finally another good thing about this approach is that we are reinforcing the semantic meaning of those long strings. Anyone can understand that MyFeature.productApiURL represents the URL product API or that MyFeature.successfulMessageHTML is the HTML code for a successful message for My Feature. Basically we are explaining what it means in <strong>terms of domain</strong> (Successful Message, Product API, Valid Email…) and <strong>in which format it is represented</strong> (HTML, URL, REGEX…).</p>
+]]></content>
+  </entry>
+  
+</feed>

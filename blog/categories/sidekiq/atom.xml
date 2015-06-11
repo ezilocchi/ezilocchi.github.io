@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Sidekiq | Just Some More Devs Ideas]]></title>
+  <link href="http://ezilocchi.github.io/blog/categories/sidekiq/atom.xml" rel="self"/>
+  <link href="http://ezilocchi.github.io/"/>
+  <updated>2015-06-11T11:53:46-03:00</updated>
+  <id>http://ezilocchi.github.io/</id>
+  <author>
+    <name><![CDATA[Emiliano Zilocchi]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Managing Sidekiq With Upstart]]></title>
+    <link href="http://ezilocchi.github.io/managing-sidekiq-with-upstart/"/>
+    <updated>2014-10-10T15:47:53-03:00</updated>
+    <id>http://ezilocchi.github.io/managing-sidekiq-with-upstart</id>
+    <content type="html"><![CDATA[<p>This post has started as a research on <strong>How to start Sidekiq on a system reboot</strong>. After read blogs and try different approaches we ended with Upstart, that is the new way of managing jobs on the Ubuntu platform (Actually not so new, it was included on the standard releases since 10.04 I think). With it you basically define a standard <strong>Ubuntu Job</strong> and then you can just:</p>
+
+<p><code>
+sudo service sidekiq [start | stop | restart | status]
+</code></p>
+
+<p>We have a quite standard Rails stack that involves:</p>
+
+<ul>
+<li><strong>Ubuntu 12.04</strong> LTS</li>
+<li><strong>Sidekiq</strong> with <strong>Redis</strong></li>
+<li><a href="http://rvm.io/">RVM</a> to manage our ruby versions (with <a href="https://github.com/sstephenson/rbenv">rbenv</a> you can use the <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> on the official sidekiq github repo)</li>
+<li><strong>Capistrano</strong> for deploying the application</li>
+</ul>
+
+
+<!-- more -->
+
+
+<p>The only thing to do in order to get your new job up and running, it&rsquo;s create a conf file under <code>/etc/init</code> directory. The file name will be the job name that you will <code>[start | stop | restart | status]</code> later.</p>
+
+<p>The structure of this file must follow the Upstart DSL (you can see different example on <code>/etc/init</code> directory and on the <a href="http://upstart.ubuntu.com/cookbook/">official documentation</a>).</p>
+
+<p>For our purpose we are going to create a file <code>/etc/init/sidekiq.conf</code> so you can run <code>sudo service sidekiq [start | stop | restart | status]</code> and at the same time we can tell Upstart that it should start everytime the <strong>system boot</strong>.</p>
+
+<p>On my case I used this <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> as a starting point adapting it to RVM (note that it uses <strong>rbenv</strong>). On the other hand this script was not thought to start sidekiq when the <strong>OS is booted</strong> but that is a quite simple thing, just add <code>start on startup</code></p>
+
+<p>```bash /etc/init/sidekiq.conf</p>
+
+<h1>Just a custom description for our Job</h1>
+
+<p>description &ldquo;Sidekiq Background Worker&rdquo;</p>
+
+<h1>On which conditions the job should start. In this case it&rsquo;s very simple: On the system startup (this is basically when the system is booted)</h1>
+
+<p>start on startup</p>
+
+<h1>On which conditions the job should stop. In this case when the system reboot (<a href="http://upstart.ubuntu.com/cookbook/#runlevels">http://upstart.ubuntu.com/cookbook/#runlevels</a>)</h1>
+
+<p>stop on runlevel [06]</p>
+
+<h1>This are the User and User Group that will be used to run the Job. On our case it should be the user that we have set on our capistrano script for instance.</h1>
+
+<h1>You can check at <code>config/deploy/&lt;environment&gt;.rb</code> on this line <code>server &lt;some_ip_addreess&gt;, user: &lt;deploy_user&gt;</code></h1>
+
+<p>setuid deploy_user
+setgid deploy_group</p>
+
+<h1>This indicate that we want to restart the Job if it crashes</h1>
+
+<p>respawn
+respawn limit 3 30</p>
+
+<h1>TERM is sent by sidekiqctl when stopping sidekiq.  Without declaring these as normal exit codes, it just respawns.</h1>
+
+<p>normal exit 0 TERM</p>
+
+<p>script</p>
+
+<h1>this script runs in /bin/sh by default</h1>
+
+<h1>respawn as bash so we can source in RVM</h1>
+
+<p>exec /bin/bash &lt;<EOT
+  # use syslog for logging
+  exec &> /dev/kmsg</p>
+
+<p>  # Jump into the capistrano deployment directory
+  cd /var/projects/&lt;YOUR_PROJECT_DIR>/current</p>
+
+<p>  # Start Sidekiq through RVM. Note that I&rsquo;m using the standard Capistrano paths
+  exec ~/.rvm/bin/rvm-shell -c &lsquo;bundle exec sidekiq &mdash;index 0 &mdash;environment <environemnt> &mdash;logfile /var/projects/&lt;YOUR_PROJECT_DIR>/current/log/sidekiq.log&rsquo;
+EOT
+end script
+```</p>
+
+<p>One more thing that might be helpful is how to debug this in case it doesn&rsquo;t work on the first try or if you need to adapt it. Well you can just
+<code>tail -f /var/log/syslog</code> and see the errors.</p>
+
+<p>That is pritty much it, now your Sidekiq process is being managed as a standard Ubuntu Job.</p>
+
+<p>Resources:</p>
+
+<ul>
+<li><a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">https://github.com/mperham/sidekiq/tree/master/examples/upstart</a></li>
+<li><a href="http://upstart.ubuntu.com/getting-started.html">http://upstart.ubuntu.com/getting-started.html</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

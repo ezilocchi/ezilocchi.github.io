@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Just Some More Devs Ideas]]></title>
+  <link href="http://ezilocchi.github.io/atom.xml" rel="self"/>
+  <link href="http://ezilocchi.github.io/"/>
+  <updated>2015-06-11T11:53:46-03:00</updated>
+  <id>http://ezilocchi.github.io/</id>
+  <author>
+    <name><![CDATA[Emiliano Zilocchi]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Managing Sidekiq With Upstart]]></title>
+    <link href="http://ezilocchi.github.io/managing-sidekiq-with-upstart/"/>
+    <updated>2014-10-10T15:47:53-03:00</updated>
+    <id>http://ezilocchi.github.io/managing-sidekiq-with-upstart</id>
+    <content type="html"><![CDATA[<p>This post has started as a research on <strong>How to start Sidekiq on a system reboot</strong>. After read blogs and try different approaches we ended with Upstart, that is the new way of managing jobs on the Ubuntu platform (Actually not so new, it was included on the standard releases since 10.04 I think). With it you basically define a standard <strong>Ubuntu Job</strong> and then you can just:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo service sidekiq [start | stop | restart | status]</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We have a quite standard Rails stack that involves:</p>
+
+<ul>
+<li><strong>Ubuntu 12.04</strong> LTS</li>
+<li><strong>Sidekiq</strong> with <strong>Redis</strong></li>
+<li><a href="http://rvm.io/">RVM</a> to manage our ruby versions (with <a href="https://github.com/sstephenson/rbenv">rbenv</a> you can use the <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> on the official sidekiq github repo)</li>
+<li><strong>Capistrano</strong> for deploying the application</li>
+</ul>
+
+
+<!-- more -->
+
+
+<p>The only thing to do in order to get your new job up and running, it&rsquo;s create a conf file under <code>/etc/init</code> directory. The file name will be the job name that you will <code>[start | stop | restart | status]</code> later.</p>
+
+<p>The structure of this file must follow the Upstart DSL (you can see different example on <code>/etc/init</code> directory and on the <a href="http://upstart.ubuntu.com/cookbook/">official documentation</a>).</p>
+
+<p>For our purpose we are going to create a file <code>/etc/init/sidekiq.conf</code> so you can run <code>sudo service sidekiq [start | stop | restart | status]</code> and at the same time we can tell Upstart that it should start everytime the <strong>system boot</strong>.</p>
+
+<p>On my case I used this <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> as a starting point adapting it to RVM (note that it uses <strong>rbenv</strong>). On the other hand this script was not thought to start sidekiq when the <strong>OS is booted</strong> but that is a quite simple thing, just add <code>start on startup</code></p>
+
+<figure class='code'><figcaption><span>/etc/init/sidekiq.conf</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># Just a custom description for our Job</span>
+</span><span class='line'>description <span class="s2">&quot;Sidekiq Background Worker&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># On which conditions the job should start. In this case it&#39;s very simple: On the system startup (this is basically when the system is booted)</span>
+</span><span class='line'>start on startup
+</span><span class='line'>
+</span><span class='line'><span class="c"># On which conditions the job should stop. In this case when the system reboot (http://upstart.ubuntu.com/cookbook/#runlevels)</span>
+</span><span class='line'>stop on runlevel <span class="o">[</span>06<span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># This are the User and User Group that will be used to run the Job. On our case it should be the user that we have set on our capistrano script for instance.</span>
+</span><span class='line'><span class="c"># You can check at `config/deploy/&lt;environment&gt;.rb` on this line `server &lt;some_ip_addreess&gt;, user: &lt;deploy_user&gt;`</span>
+</span><span class='line'>
+</span><span class='line'>setuid deploy_user
+</span><span class='line'>setgid deploy_group
+</span><span class='line'>
+</span><span class='line'><span class="c"># This indicate that we want to restart the Job if it crashes</span>
+</span><span class='line'>respawn
+</span><span class='line'>respawn limit 3 30
+</span><span class='line'>
+</span><span class='line'><span class="c"># TERM is sent by sidekiqctl when stopping sidekiq.  Without declaring these as normal exit codes, it just respawns.</span>
+</span><span class='line'>normal <span class="nb">exit </span>0 TERM
+</span><span class='line'>
+</span><span class='line'>script
+</span><span class='line'><span class="c"># this script runs in /bin/sh by default</span>
+</span><span class='line'><span class="c"># respawn as bash so we can source in RVM</span>
+</span><span class='line'><span class="nb">exec</span> /bin/bash <span class="s">&lt;&lt;EOT</span>
+</span><span class='line'><span class="s">  # use syslog for logging</span>
+</span><span class='line'><span class="s">  exec &amp;&gt; /dev/kmsg</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  # Jump into the capistrano deployment directory</span>
+</span><span class='line'><span class="s">  cd /var/projects/&lt;YOUR_PROJECT_DIR&gt;/current</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  # Start Sidekiq through RVM. Note that I&#39;m using the standard Capistrano paths</span>
+</span><span class='line'><span class="s">  exec ~/.rvm/bin/rvm-shell -c &#39;bundle exec sidekiq --index 0 --environment &lt;environemnt&gt; --logfile /var/projects/&lt;YOUR_PROJECT_DIR&gt;/current/log/sidekiq.log&#39;</span>
+</span><span class='line'><span class="s">EOT</span>
+</span><span class='line'>end script
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One more thing that might be helpful is how to debug this in case it doesn&rsquo;t work on the first try or if you need to adapt it. Well you can just
+<code>tail -f /var/log/syslog</code> and see the errors.</p>
+
+<p>That is pritty much it, now your Sidekiq process is being managed as a standard Ubuntu Job.</p>
+
+<p>Resources:</p>
+
+<ul>
+<li><a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">https://github.com/mperham/sidekiq/tree/master/examples/upstart</a></li>
+<li><a href="http://upstart.ubuntu.com/getting-started.html">http://upstart.ubuntu.com/getting-started.html</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started With Octopress]]></title>
+    <link href="http://ezilocchi.github.io/getting-started-with-octopress/"/>
+    <updated>2014-04-03T00:06:42-03:00</updated>
+    <id>http://ezilocchi.github.io/getting-started-with-octopress</id>
+    <content type="html"><![CDATA[<p>This is just some thoughts after my experience of migrating my blogging platform from <strong>Wordpress</strong> to <strong>Octopress</strong>. For those who have never heard about it, <strong>Octopress</strong> is basically a tunned Jeckely for hackers with a set of plugins ready to use. The big goal of these blogging platforms is that you can write your posts using <strong>Markdown</strong> language instead of plain HTML or some word like editor (If you are used to write github <strong>README.md</strong> file, you will love it!). In this way it transforms the act of writing a post into a programming experience.</p>
+
+<p>You can find the <a href="http://octopress.org/docs/setup/">installation</a> and <a href="http://octopress.org/docs/deploying/">deployment</a> instructions at the official <a href="http://octopress.org/">website</a>.</p>
+
+<h3>Things that I did right after the standard installation</h3>
+
+<ul>
+<li>Set aside config for different pages.</li>
+<li>Configure some built-in <strong>Octopress</strong> plugins.</li>
+<li>Enable comments through <a href="http://disqus.com/">disqus</a>.</li>
+<li>Create and configure a Google Analytics account.</li>
+<li>Configure the <strong>about me</strong> at the right side bar.</li>
+</ul>
+
+
+<!-- more -->
+
+
+<h3>Set aside config for different pages</h3>
+
+<p>There are a couple of entries in the <code>_config.yml</code> file that you can modify in order to set different aside (right barmenu) on different pages. The most common distintion is between the index (where you usually show a summary for the last 10 posts) and the post page. For this example you have to modify <code>blog_index_asides</code> and <code>post_asides</code>.</p>
+
+<h3>Configure some built-in Octopress plugins</h3>
+
+<p>On this step you will set the basic configuration for integrate.
+<strong>Google+</strong>, <strong>Twitter</strong>, <strong>Facebook</strong>, <strong>Github</strong>. This step it&rsquo;s very easy just follow the <a href="http://octopress.org/docs/configuring/">official documentation</a> for it.</p>
+
+<h3>Create a Disqus account and configure it</h3>
+
+<p>The standard way of making your posts commetable in <strong>Octopress</strong> is configuring <strong>disqus</strong> for it. This is a website that will manage your comments for you, so you will be able to migrate your blogging plataform in a much easier way. The only thing you have to do is to <a href="https://disqus.com/profile/signup/">create an account</a> and then configure it on <strong>Octopress</strong>. In order to do this you have to set these two variables in the <code>_config.yml</code> file:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>disqus_show_comment_count: true
+</span><span class='line'>disqus_short_name: YOUR_DISQUS_ACCOUNT</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally make sure that your blog entries have the <code>comments: true</code> option on top.</p>
+
+<h3>Configure the blog domain</h3>
+
+<p>NOTE: I&rsquo;m using github pages for hosting and Go Daddy to get my domain. Other deployment strategies can be found <a href="http://octopress.org/docs/deploying/">here</a>.</p>
+
+<ul>
+<li>Ceate a <code>CNAME</code> file with your domain and put it into the <code>source</code> folder. Then push it <code>git push origin source</code> and deploy your changes <code>bundle rake deploy</code>.</li>
+<li>Configure your domain provider (<a href="http://godaddy.com">Godaddy</a> in my case) to tell it where your application is hosted.</li>
+<li>Finally we have to wait for the DNS to be updated. This could take a few minutes, so be patient.</li>
+</ul>
+
+
+<h3>Configure Google Analytics</h3>
+
+<p>First you have to configure your site in Google Analytics anf get the Google Analytic ID for it. Then go to the <code>_config.yml</code> file and set it like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>google_analytics_tracking_id: YOUR_APP_ANALYTIC_ID</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Again this will take some time, so be patient.</p>
+
+<h3>Configure the &ldquo;about me&rdquo; at the right side bar so you can show who you are</h3>
+
+<p><strong>Octopress</strong> (at least the version I&rsquo;m using) already comes with a aside partial <code>/source/_includes/custom/asides/about.html</code>. There you can write your About Me section and the configure it to be shown as any aside in the <code>_config.yml</code>. In my case I&rsquo;m showing it in the <code>posts_index_page</code>, just next to the last 10 posts summury.</p>
+
+<p>NOTE: For those who come from <strong>Wordpress</strong> and are used to <a href="http://gravatar.com">gravatar</a>, I&rsquo;ve created a jQuery plugin for it. You can find it on the <a href="http://plugins.jquery.com/gravatar/">jQuery plugin repo</a> and <a href="https://github.com/ezilocchi/jquery-gravatar/">Github</a>.</p>
+
+<figure class='code'><figcaption><span>About Me partial (about.html)</span> <a href='http://ezilocchi.github.io/downloads/code/about.html'>download</a></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;{{ root_url }}/javascripts/jquery.gravatar.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script&gt;</span>
+</span><span class='line'>  <span class="nx">jQuery</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.gravatar&#39;</span><span class="p">).</span><span class="nx">gravatar</span><span class="p">(</span><span class="s1">&#39;ezilocchi&#39;</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;section&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;h1&gt;</span>About Me<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;gravatar&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;displayName&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;email&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;thumbnailUrl&quot;</span> <span class="na">style=</span><span class="s">&quot;width:40%; float:left; padding-top:10px&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;urls&quot;</span> <span class="na">style=</span><span class="s">&quot;width:60%; float:left&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;p&gt;</span>I&#39;m currently working at <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;https://twitter.com/stackbuilders&quot;</span> <span class="na">target=</span><span class="s">&quot;_blank&quot;</span><span class="nt">&gt;</span>@stackbuilders<span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+</span><span class='line'><span class="nt">&lt;/section&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Conclusion</h3>
+
+<p>What I really like about <strong>Octopress</strong> it&rsquo;s the way that you write posts, it&rsquo;s just like programming. You don&rsquo;t need to use any specific tool of editor, just your favorite Editor or IDE :)</p>
+
+<p>BTW, since I&rsquo;m hosting <a href="https://github.com/ezilocchi/ezilocchi.github.io">my blog</a> on github, you are able to take a look at it.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started With Puppet and Rails]]></title>
+    <link href="http://ezilocchi.github.io/getting-started-with-puppet-and-rails/"/>
+    <updated>2013-12-23T20:51:04-03:00</updated>
+    <id>http://ezilocchi.github.io/getting-started-with-puppet-and-rails</id>
+    <content type="html"><![CDATA[<p>This is just an example project showing how to get a <strong>Ruby on Rails</strong> environment up and running with just one command line using <strong>Puppet</strong>. It was original created for (but it can be easily modified to run with other setups):</p>
+
+<ul>
+<li><strong>Ubuntu</strong> 13.10 (since it’s one of the most supported distros in the linux community)</li>
+<li><strong>Rbenv</strong> as Ruby manager (there is no way of developing ruby without a Ruby Version Manager. You can user RVM as well)</li>
+<li><strong>Postgresql</strong> (since it’s 100% open source and it’s the <em><a href="http://www.heroku.com" target="_blank">heroku</a></em> default)</li>
+<li><strong>VIM</strong> (with <em><a href="https://github.com/carlhuda/janus" target="_blank">janus</a></em> distribution)</li>
+<li><strong>Nodejs</strong> (since it’s the most popular and stable JS engine)</li>
+<li><strong>Git</strong> (it doesn’t need any explanation)</li>
+</ul>
+
+
+<p>Any contribution to improve it (like proposing a better way of writing the config) or add more features (like supporting others linux distributions) is very welcomed :).</p>
+
+<p>So basically you can run this command from your terminal:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo curl https://raw.github.com/ezilocchi/my-puppet-conf/master/install.sh | bash</span></code></pre></td></tr></table></div></figure>
+
+
+<p>or you can go to the <a href="http://github.com/ezilocchi/my-puppet-conf">github repo</a> and see how it works</p>
+
+<!-- more -->
+
+
+<h2>Long story</h2>
+
+<p>During the last 6 month I had to set the development environment in my laptop 3 times. First I got a new job as freelance developer and I had to follow a step by step document to convert my machine into a full developer workstation. Then my hard drive broke and I had to set everything again, following every little step, running every command from the console. Finally I got a new laptop, an amazing Dell XPS, and guess what I went to that setup document one more time. Actually the story doesn’t end there, some months later two other devs joined the project and they were able to run this command instead of follow the whole document. At some point this  became something useful</p>
+
+<p>So my first attempt was to create a shell script, something that you can run from the console and automatically sets everything. But then I remembered puppet, I used it in a project but I’ve never configured it by my own (only run <code>puppet agent</code>). Usually devops are who handle this kind of things, not developers.</p>
+
+<p>This is just a puppet config that I created as a self learning project that has grown with the time and helps other devs on this project to set up their own environments.</p>
+
+<p>IMPORTANT: The final purpose of puppet it’s much larger than this. The idea it’s to stay in sync all your <strong>environments (demo, stage, prod, etc…)</strong> and avoid any kind of configuration issues during deployment, among other things. But as I mentioned before this started as a learning experience but ends up in something useful for this project.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Line Too Long on jsLint and jsHint]]></title>
+    <link href="http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint/"/>
+    <updated>2013-09-16T10:36:07-03:00</updated>
+    <id>http://ezilocchi.github.io/line-too-long-on-jslint-and-jshint</id>
+    <content type="html"><![CDATA[<p>This is just another approach to fix the famous Line too long on JShint or JSlint complain.</p>
+
+<blockquote><p>NOTE: this started as an answer for this <a href="http://stackoverflow.com/questions/9570207/whats-the-jslint-approved-way-of-creating-a-long-string/">Stackoverflow
+question</a>.</p></blockquote>
+
+<p>The thing is what to do with those long strings that throw a <strong>Line too long</strong> complain but it still makes sense to have them in that way. Think in examples like an URL or a HASH / SHA.</p>
+
+<p>First of all, it’s important to agree that there is no “one solution” for this situation and second of all that it’s a matter of design more than a technical issue. It’s true that sometimes it makes sense to split these kind of strings into several lines, such as <strong>HTML</strong> code representations, but sometimes it doesn’t as in the example of an URL, a <strong>HASH / SHA</strong> string or even paragraphs.</p>
+
+<!-- more -->
+
+
+<p>So the first attempt to add the <code>/* jshint maxlen: 130 */</code> option on top of your JS file will fix the problem, omitting the <strong>Line Too Long</strong> complains only on that file. But what about other lines on the same file, that are too long as well but they should be shorter, basically a valid concern from <strong>jsHint</strong>.</p>
+
+<p>Since most of the cases where we want to keep the line as it is, no matter the length, are related to string representations like URLs, HASHs, SHAs and so on, using a placeholder could be a good approach.  Basically the idea is to create a JS file to store them and make it available through a global variable. Then you can just call it from any script across your site, like the way jQuery is used (Just remember that you need to load placeholder file before scripts that use it). The advantage about this solution is that you need to avoid this maxlen validation only in one file (Actually we are setting the maxlen to a very high number).</p>
+
+<figure class='code'><figcaption><span>my_placeholder.js</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="cm">/*jslint maxlen: 500 */</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Init the placeholder for My Feature</span>
+</span><span class='line'><span class="nx">MyFeature</span> <span class="o">=</span> <span class="nx">MyFeature</span> <span class="o">||</span> <span class="p">{};</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign URL</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">productApiURL</span> <span class="o">=</span> <span class="s1">&#39;http://this.is.the.url.to/product/API/&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign a piece of TEXT</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">productTermsOfUseText</span> <span class="o">=</span> <span class="s1">&#39;This is a very long text about</span>
+</span><span class='line'><span class="s1">something that you want to explain regarding your product terms of use</span>
+</span><span class='line'><span class="s1">for example......&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign an HTML fragment</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">successfulMessageHTML</span> <span class="o">=</span><span class="s1">&#39;&lt;/pre&gt;&lt;div class=&quot;message&quot;&gt;&lt;div</span>
+</span><span class='line'><span class="s1">lass=&quot;header&quot;&gt;Successfully reated&lt;/div&gt;&lt;div class=&quot;detail&quot;&gt;some text</span>
+</span><span class='line'><span class="s1">showing the detail...&lt;/div&gt;&lt;/div&gt;&lt;pre&gt;&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="err"> </span>
+</span><span class='line'><span class="c1">//Assign a Regex to perform some validation</span>
+</span><span class='line'><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">validEmailRegex</span> <span class="o">=</span> <span class="k">new</span>
+</span><span class='line'><span class="nb">RegExp</span><span class="p">(</span><span class="sr">/^(([^&lt;&gt;()[\]\\.,;:\s@\&quot;]+(\.[^&lt;&gt;()[\]\\.,;:\s@\&quot;]+)*)|(\&quot;.+\&quot;))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-AZ\-0-9]+\.)+[a-zA-Z]{2,}))$/</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>my_feature_related_file.js</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">//doing random awesome things</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">url</span><span class="o">:</span> <span class="nx">MyFeature</span><span class="p">.</span><span class="nx">productApiURL</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#message_container&#39;</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">MyFeature</span><span class="p">.</span><span class="nx">successfulMessageHTML</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//more awesome code here</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally another good thing about this approach is that we are reinforcing the semantic meaning of those long strings. Anyone can understand that MyFeature.productApiURL represents the URL product API or that MyFeature.successfulMessageHTML is the HTML code for a successful message for My Feature. Basically we are explaining what it means in <strong>terms of domain</strong> (Successful Message, Product API, Valid Email…) and <strong>in which format it is represented</strong> (HTML, URL, REGEX…).</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Rails 4 With Mongodb]]></title>
+    <link href="http://ezilocchi.github.io/getting-started-rails-4-with-mongodb/"/>
+    <updated>2013-04-26T09:49:31-03:00</updated>
+    <id>http://ezilocchi.github.io/getting-started-rails-4-with-mongodb</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p>The idea is to create a Ruby on Rails application  from scratch, that
+connects with MongoDB. The gems involve are:</p>
+
+<ul>
+<li><strong>MongoID</strong>:  To integrate Rails and MongoDB</li>
+<li><strong>Slim</strong>: An alternative template engine to ERB (the Rails default one).</li>
+<li><strong>Rspec</strong>: A BDD gem to express the tests as specifications</li>
+<li><strong>Cucumber</strong>: A BBD gem to express the acceptance tests in Gherkin Syntax</li>
+</ul>
+
+
+<p>NOTE: You can find the source code for this tutorial <a href="https://github.com/ezilocchi/rails_with_mongo_example">here</a></p>
+
+<p>Technology Stack: <strong>MongoDB</strong>, <strong>Ruby</strong>, <strong>Rails</strong>, <strong>GIT (Optional)</strong>, <strong>VIM (Optional)</strong></p>
+
+<!-- more -->
+
+
+<h2>Create a rails app without active record and test unit </h2>
+
+<p>Since we are using MongoDB, a NoSQL database, we don’t need ActiveRecord, so we can use the option <code>--skip-active-record</code> in order to avoid the creation of all the files and configuration related.</p>
+
+<p>In the same way, we want to use Rspec and Cucumber for automation testing, so we can omit the Unit Test installation as well with the option <code>--skip-test-unit</code>.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rails new myapp --skip-active-record --skip-test-unit</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Installing MongoID gem</h2>
+
+<p>Open the Gemfile and add the dependency <code>gem “mongoid”</code> and then run <code>bundle install</code>.</p>
+
+<p>Finally run</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rails generate mongoid:config</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now any time that you run a generate command that involves models creation it will invoke MongoID instead of ActiveRecord.</p>
+
+<p>NOTE: At the time of writing this blog the lastest release for MongoID (3.0.5) is not compatible with Rails 4, so you have to use the master version instead:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>+  gem 'mongoid', git: 'git://github.com/mongoid/mongoid.git'</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Installing Slim gem</h2>
+
+<p>Open the Gemfile and add the gem dependency: <code>gem “slim-rails”</code> and run <code>bundle install</code>.</p>
+
+<p>Now any time that you run a generate command that involves template creation it will use Slim instead of ERB.</p>
+
+<h2>Installing Rspec gem</h2>
+
+<p>One more time we add the dependency:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>+  group :test do
+</span><span class='line'>+    gem "rspec-rails"
+</span><span class='line'>+  end</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And then run:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rails generate rspec:install</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Since we are using MongoID and not ActiveRecord, you need to comment these two lines from spec/spec_helper.rb:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Remove this line if you're not using ActiveRecord or ActiveRecord
+</span><span class='line'>fixtures
+</span><span class='line'>-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+</span><span class='line'>+  # config.fixture_path = "#{::Rails.root}/spec/fixtures"
+</span><span class='line'># If you're not using ActiveRecord, or you'd prefer not to run each of
+</span><span class='line'>your
+</span><span class='line'># examples within a transaction, remove the following line or assign
+</span><span class='line'>false
+</span><span class='line'># instead of true.
+</span><span class='line'>-  config.use_transactional_fixtures = true
+</span><span class='line'>+  # config.use_transactional_fixtures = true</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Installing Cucumber gem</h2>
+
+<p>Again we add the dependency:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>+  group :test do
+</span><span class='line'>+    gem 'cucumber-rails', :require =&gt; false
+</span><span class='line'>+    gem 'database_cleaner'
+</span><span class='line'>+  end</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And the command to install it:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rails generate cucumber:install</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Since we are using MongoID and not ActiveRecord, you need to change the database cleaner strategy from transaction to truncation in features/support/env.rb:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-  DatabaseCleaner.strategy = :transaction
+</span><span class='line'>+  DatabaseCleaner.strategy = :truncation</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Let’s create some entities</h2>
+
+<p>To show the impact of these gems in a standar generate command, let see what has changed.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rails generate scaffold product name description price:float</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>invoke  mongoid
+</span><span class='line'>create    app/models/product.rb
+</span><span class='line'>invoke  resource_route
+</span><span class='line'>route    resources :products
+</span><span class='line'>invoke  jbuilder_scaffold_controller
+</span><span class='line'>create    app/controllers/products_controller.rb
+</span><span class='line'>invoke    slim
+</span><span class='line'>create      app/views/products
+</span><span class='line'>create      app/views/products/index.html.slim
+</span><span class='line'>create      app/views/products/edit.html.slim
+</span><span class='line'>create      app/views/products/show.html.slim
+</span><span class='line'>create      app/views/products/new.html.slim
+</span><span class='line'>create      app/views/products/_form.html.slim
+</span><span class='line'>invoke    helper
+</span><span class='line'>create      app/helpers/products_helper.rb
+</span><span class='line'>invoke    jbuilder
+</span><span class='line'>exist      app/views/products
+</span><span class='line'>create      app/views/products/index.json.jbuilder
+</span><span class='line'>create      app/views/products/show.json.jbuilder
+</span><span class='line'>invoke  assets
+</span><span class='line'>invoke    coffee
+</span><span class='line'>create      app/assets/javascripts/products.js.coffee
+</span><span class='line'>invoke    scss
+</span><span class='line'>create      app/assets/stylesheets/products.css.scss
+</span><span class='line'>invoke  scss
+</span><span class='line'>create    app/assets/stylesheets/scaffolds.css.scss</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is the command output, let’s see what has changed from the default one:</p>
+
+<ul>
+<li><strong>views</strong>: We are invoking slim so we are generating slim extension instead of erb.</li>
+<li><strong>db</strong>: We are not generating migrations. Since MongoDB is a schemaless database, we don’t need to create tables.</li>
+<li><strong>model</strong>: We are invoking mongoid now, so we are creating models prepared to work with Mongo:</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>+  class Product
+</span><span class='line'>+    include Mongoid::Document
+</span><span class='line'>+    field :name, type: String
+</span><span class='line'>+    field :description, type: String
+</span><span class='line'>+    field :price, type: Float
+</span><span class='line'>+  end</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Resources:</h2>
+
+<ul>
+<li><a href="http://stackoverflow.com/questions/15512683/comparability-issue-rails-4-beta-ruby-2-0-0-mongoid">http://stackoverflow.com/questions/15512683/comparability-issue-rails-4-beta-ruby-2-0-0-mongoid</a></li>
+<li><a href="http://github.com/ezilocchi/rails_with_mongo_example">http://github.com/ezilocchi/rails_with_mongo_example</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Installing RVM on Ubuntu]]></title>
+    <link href="http://ezilocchi.github.io/installing-rvm-on-ubuntu/"/>
+    <updated>2012-08-13T11:04:59-03:00</updated>
+    <id>http://ezilocchi.github.io/installing-rvm-on-ubuntu</id>
+    <content type="html"><![CDATA[<p>I have recently started to work on a <strong>Ruby on Rails</strong> project which is composed by different subsystems under a RESTful architecture. The thing is that every piece in the whole picture has different deployment characteristics, for example some of them use <strong>ruby 1.8.7</strong> some others use <strong>ruby 1.9.3</strong> and even the ruby interpreter could be different (<strong>ruby RMI</strong> or <strong>ree</strong> for example). So imagine that you have to work with all these projects at the same time in the same work station, even for a single Story you you might jump between them.  So the idea is to find a way to deal with all these infrastructure issues in just one dev machine without pain.</p>
+
+<p>So here we have one amazing tool that makes this process much easier: <strong>Ruby Version Manager (RVM)</strong></p>
+
+<p>Note: This tutorial was written based on an official RVM <a href="https://rvm.io/rvm/install/">site</a> and shows how to do it for <strong>Ubuntu 12.04</strong> but it should also works for other Ubuntu versions.</p>
+
+<blockquote><p>IMPORTANT: The RVM alternative is <a href="https://github.com/sstephenson/rbenv">rbenv</a>, if you want to try it check the <a href="https://github.com/sstephenson/rbenv">rbenv-installer</a></p></blockquote>
+
+<!-- more -->
+
+
+<ol>
+<li><p>Install curl, we will use it for the RVM installation</p>
+
+<p><code>
+$ sudo apt-get install curl
+</code></p></li>
+<li><p>Install the stable RVM version. Complete guide and source <a href="https://rvm.io/rvm/install/">here</a></p>
+
+<p><code>
+$ curl -L https://get.rvm.io | bash -s stable --ruby
+</code></p></li>
+<li><p>We need to reload the RVM in the shell</p>
+
+<p><code>
+$ source ~/.rvm/scripts/rvm
+</code></p></li>
+<li><p>Check the installation</p>
+
+<p><code>
+$ type rvm | head -n 1
+</code></p>
+
+<p>Expected output <code>&gt; rvm is a function</code></p>
+
+<blockquote><p>NOTE:if don&rsquo;t see this message you probably forgot to reload the RVM <code>source ~/.rvm/scripts/rvm</code></p></blockquote></li>
+<li><p>Install the ruby version that you want to use (To see available versions: <code>rvm list</code>)</p>
+
+<p><code>
+$ rvm install &lt;version&gt;
+</code></p></li>
+<li><p>Let’s try it!!! To do this we will run the ruby console <code>irb</code>, and if everything is fine you should see the irb prompt. (something like this depending on the ruby version):</p>
+
+<p><code>
+1.9.3-p194 :001 &gt;
+</code></p>
+
+<blockquote><p>NOTE: if you see this message right after run irb, check that you have all the RVM requirements</p></blockquote>
+
+<p><code>
+Readline was unable to be required, if you need completion or history install readline then reinstall the ruby.&lt;/pre&gt; You may follow 'rvm notes' for dependencies and/or read the docs page https://rvm.io/packages/readline/ . Be sure you 'rvm remove X ; rvm install X' to re-compile your ruby with readline support after obtaining the readline libraries.
+</code></p></li>
+<li><p>For checking the RVM dependencies just run rvm requirements, and install if it is needed, all the RVM dependencies. You will probably see this</p>
+
+<p><code>
+bash &gt;= 4.1 required
+ curl is required
+ git is required (&gt;= 1.7 for ruby-head)
+ patch is required (for 1.8 rubies and some ruby-head's).
+ ...
+ Additional Dependencies:
+ # For Ruby / Ruby HEAD (MRI, Rubinius, &amp; REE), install the following:
+ ruby: /usr/bin/apt-get install build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion
+</code></p>
+
+<p>Usually you have to install this:
+<code>
+sudo apt-get install build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion
+</code></p></li>
+<li><p>Finally define the default ruby version, in order to load it automatically</p>
+
+<p><code>
+$ rvm use &lt;version&gt; --default
+</code></p></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>

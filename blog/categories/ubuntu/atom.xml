@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ubuntu | Just Some More Devs Ideas]]></title>
+  <link href="http://ezilocchi.github.io/blog/categories/ubuntu/atom.xml" rel="self"/>
+  <link href="http://ezilocchi.github.io/"/>
+  <updated>2015-06-11T11:53:46-03:00</updated>
+  <id>http://ezilocchi.github.io/</id>
+  <author>
+    <name><![CDATA[Emiliano Zilocchi]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Managing Sidekiq With Upstart]]></title>
+    <link href="http://ezilocchi.github.io/managing-sidekiq-with-upstart/"/>
+    <updated>2014-10-10T15:47:53-03:00</updated>
+    <id>http://ezilocchi.github.io/managing-sidekiq-with-upstart</id>
+    <content type="html"><![CDATA[<p>This post has started as a research on <strong>How to start Sidekiq on a system reboot</strong>. After read blogs and try different approaches we ended with Upstart, that is the new way of managing jobs on the Ubuntu platform (Actually not so new, it was included on the standard releases since 10.04 I think). With it you basically define a standard <strong>Ubuntu Job</strong> and then you can just:</p>
+
+<p><code>
+sudo service sidekiq [start | stop | restart | status]
+</code></p>
+
+<p>We have a quite standard Rails stack that involves:</p>
+
+<ul>
+<li><strong>Ubuntu 12.04</strong> LTS</li>
+<li><strong>Sidekiq</strong> with <strong>Redis</strong></li>
+<li><a href="http://rvm.io/">RVM</a> to manage our ruby versions (with <a href="https://github.com/sstephenson/rbenv">rbenv</a> you can use the <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> on the official sidekiq github repo)</li>
+<li><strong>Capistrano</strong> for deploying the application</li>
+</ul>
+
+
+<!-- more -->
+
+
+<p>The only thing to do in order to get your new job up and running, it&rsquo;s create a conf file under <code>/etc/init</code> directory. The file name will be the job name that you will <code>[start | stop | restart | status]</code> later.</p>
+
+<p>The structure of this file must follow the Upstart DSL (you can see different example on <code>/etc/init</code> directory and on the <a href="http://upstart.ubuntu.com/cookbook/">official documentation</a>).</p>
+
+<p>For our purpose we are going to create a file <code>/etc/init/sidekiq.conf</code> so you can run <code>sudo service sidekiq [start | stop | restart | status]</code> and at the same time we can tell Upstart that it should start everytime the <strong>system boot</strong>.</p>
+
+<p>On my case I used this <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> as a starting point adapting it to RVM (note that it uses <strong>rbenv</strong>). On the other hand this script was not thought to start sidekiq when the <strong>OS is booted</strong> but that is a quite simple thing, just add <code>start on startup</code></p>
+
+<p>```bash /etc/init/sidekiq.conf</p>
+
+<h1>Just a custom description for our Job</h1>
+
+<p>description &ldquo;Sidekiq Background Worker&rdquo;</p>
+
+<h1>On which conditions the job should start. In this case it&rsquo;s very simple: On the system startup (this is basically when the system is booted)</h1>
+
+<p>start on startup</p>
+
+<h1>On which conditions the job should stop. In this case when the system reboot (<a href="http://upstart.ubuntu.com/cookbook/#runlevels">http://upstart.ubuntu.com/cookbook/#runlevels</a>)</h1>
+
+<p>stop on runlevel [06]</p>
+
+<h1>This are the User and User Group that will be used to run the Job. On our case it should be the user that we have set on our capistrano script for instance.</h1>
+
+<h1>You can check at <code>config/deploy/&lt;environment&gt;.rb</code> on this line <code>server &lt;some_ip_addreess&gt;, user: &lt;deploy_user&gt;</code></h1>
+
+<p>setuid deploy_user
+setgid deploy_group</p>
+
+<h1>This indicate that we want to restart the Job if it crashes</h1>
+
+<p>respawn
+respawn limit 3 30</p>
+
+<h1>TERM is sent by sidekiqctl when stopping sidekiq.  Without declaring these as normal exit codes, it just respawns.</h1>
+
+<p>normal exit 0 TERM</p>
+
+<p>script</p>
+
+<h1>this script runs in /bin/sh by default</h1>
+
+<h1>respawn as bash so we can source in RVM</h1>
+
+<p>exec /bin/bash &lt;<EOT
+  # use syslog for logging
+  exec &> /dev/kmsg</p>
+
+<p>  # Jump into the capistrano deployment directory
+  cd /var/projects/&lt;YOUR_PROJECT_DIR>/current</p>
+
+<p>  # Start Sidekiq through RVM. Note that I&rsquo;m using the standard Capistrano paths
+  exec ~/.rvm/bin/rvm-shell -c &lsquo;bundle exec sidekiq &mdash;index 0 &mdash;environment <environemnt> &mdash;logfile /var/projects/&lt;YOUR_PROJECT_DIR>/current/log/sidekiq.log&rsquo;
+EOT
+end script
+```</p>
+
+<p>One more thing that might be helpful is how to debug this in case it doesn&rsquo;t work on the first try or if you need to adapt it. Well you can just
+<code>tail -f /var/log/syslog</code> and see the errors.</p>
+
+<p>That is pritty much it, now your Sidekiq process is being managed as a standard Ubuntu Job.</p>
+
+<p>Resources:</p>
+
+<ul>
+<li><a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">https://github.com/mperham/sidekiq/tree/master/examples/upstart</a></li>
+<li><a href="http://upstart.ubuntu.com/getting-started.html">http://upstart.ubuntu.com/getting-started.html</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started With Puppet and Rails]]></title>
+    <link href="http://ezilocchi.github.io/getting-started-with-puppet-and-rails/"/>
+    <updated>2013-12-23T20:51:04-03:00</updated>
+    <id>http://ezilocchi.github.io/getting-started-with-puppet-and-rails</id>
+    <content type="html"><![CDATA[<p>This is just an example project showing how to get a <strong>Ruby on Rails</strong> environment up and running with just one command line using <strong>Puppet</strong>. It was original created for (but it can be easily modified to run with other setups):</p>
+
+<ul>
+<li><strong>Ubuntu</strong> 13.10 (since it’s one of the most supported distros in the linux community)</li>
+<li><strong>Rbenv</strong> as Ruby manager (there is no way of developing ruby without a Ruby Version Manager. You can user RVM as well)</li>
+<li><strong>Postgresql</strong> (since it’s 100% open source and it’s the <em><a href="http://www.heroku.com" target="_blank">heroku</a></em> default)</li>
+<li><strong>VIM</strong> (with <em><a href="https://github.com/carlhuda/janus" target="_blank">janus</a></em> distribution)</li>
+<li><strong>Nodejs</strong> (since it’s the most popular and stable JS engine)</li>
+<li><strong>Git</strong> (it doesn’t need any explanation)</li>
+</ul>
+
+
+<p>Any contribution to improve it (like proposing a better way of writing the config) or add more features (like supporting others linux distributions) is very welcomed :).</p>
+
+<p>So basically you can run this command from your terminal:</p>
+
+<p><code>
+sudo curl https://raw.github.com/ezilocchi/my-puppet-conf/master/install.sh | bash
+</code></p>
+
+<p>or you can go to the <a href="http://github.com/ezilocchi/my-puppet-conf">github repo</a> and see how it works</p>
+
+<!-- more -->
+
+
+<h2>Long story</h2>
+
+<p>During the last 6 month I had to set the development environment in my laptop 3 times. First I got a new job as freelance developer and I had to follow a step by step document to convert my machine into a full developer workstation. Then my hard drive broke and I had to set everything again, following every little step, running every command from the console. Finally I got a new laptop, an amazing Dell XPS, and guess what I went to that setup document one more time. Actually the story doesn’t end there, some months later two other devs joined the project and they were able to run this command instead of follow the whole document. At some point this  became something useful</p>
+
+<p>So my first attempt was to create a shell script, something that you can run from the console and automatically sets everything. But then I remembered puppet, I used it in a project but I’ve never configured it by my own (only run <code>puppet agent</code>). Usually devops are who handle this kind of things, not developers.</p>
+
+<p>This is just a puppet config that I created as a self learning project that has grown with the time and helps other devs on this project to set up their own environments.</p>
+
+<p>IMPORTANT: The final purpose of puppet it’s much larger than this. The idea it’s to stay in sync all your <strong>environments (demo, stage, prod, etc…)</strong> and avoid any kind of configuration issues during deployment, among other things. But as I mentioned before this started as a learning experience but ends up in something useful for this project.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Installing RVM on Ubuntu]]></title>
+    <link href="http://ezilocchi.github.io/installing-rvm-on-ubuntu/"/>
+    <updated>2012-08-13T11:04:59-03:00</updated>
+    <id>http://ezilocchi.github.io/installing-rvm-on-ubuntu</id>
+    <content type="html"><![CDATA[<p>I have recently started to work on a <strong>Ruby on Rails</strong> project which is composed by different subsystems under a RESTful architecture. The thing is that every piece in the whole picture has different deployment characteristics, for example some of them use <strong>ruby 1.8.7</strong> some others use <strong>ruby 1.9.3</strong> and even the ruby interpreter could be different (<strong>ruby RMI</strong> or <strong>ree</strong> for example). So imagine that you have to work with all these projects at the same time in the same work station, even for a single Story you you might jump between them.  So the idea is to find a way to deal with all these infrastructure issues in just one dev machine without pain.</p>
+
+<p>So here we have one amazing tool that makes this process much easier: <strong>Ruby Version Manager (RVM)</strong></p>
+
+<p>Note: This tutorial was written based on an official RVM <a href="https://rvm.io/rvm/install/">site</a> and shows how to do it for <strong>Ubuntu 12.04</strong> but it should also works for other Ubuntu versions.</p>
+
+<blockquote><p>IMPORTANT: The RVM alternative is <a href="https://github.com/sstephenson/rbenv">rbenv</a>, if you want to try it check the <a href="https://github.com/sstephenson/rbenv">rbenv-installer</a></p></blockquote>
+
+<!-- more -->
+
+
+<ol>
+<li><p>Install curl, we will use it for the RVM installation</p>
+
+<p><code>
+$ sudo apt-get install curl
+</code></p></li>
+<li><p>Install the stable RVM version. Complete guide and source <a href="https://rvm.io/rvm/install/">here</a></p>
+
+<p><code>
+$ curl -L https://get.rvm.io | bash -s stable --ruby
+</code></p></li>
+<li><p>We need to reload the RVM in the shell</p>
+
+<p><code>
+$ source ~/.rvm/scripts/rvm
+</code></p></li>
+<li><p>Check the installation</p>
+
+<p><code>
+$ type rvm | head -n 1
+</code></p>
+
+<p>Expected output <code>&gt; rvm is a function</code></p>
+
+<blockquote><p>NOTE:if don&rsquo;t see this message you probably forgot to reload the RVM <code>source ~/.rvm/scripts/rvm</code></p></blockquote></li>
+<li><p>Install the ruby version that you want to use (To see available versions: <code>rvm list</code>)</p>
+
+<p><code>
+$ rvm install &lt;version&gt;
+</code></p></li>
+<li><p>Let’s try it!!! To do this we will run the ruby console <code>irb</code>, and if everything is fine you should see the irb prompt. (something like this depending on the ruby version):</p>
+
+<p><code>
+1.9.3-p194 :001 &gt;
+</code></p>
+
+<blockquote><p>NOTE: if you see this message right after run irb, check that you have all the RVM requirements</p></blockquote>
+
+<p><code>
+Readline was unable to be required, if you need completion or history install readline then reinstall the ruby.&lt;/pre&gt; You may follow 'rvm notes' for dependencies and/or read the docs page https://rvm.io/packages/readline/ . Be sure you 'rvm remove X ; rvm install X' to re-compile your ruby with readline support after obtaining the readline libraries.
+</code></p></li>
+<li><p>For checking the RVM dependencies just run rvm requirements, and install if it is needed, all the RVM dependencies. You will probably see this</p>
+
+<p><code>
+bash &gt;= 4.1 required
+ curl is required
+ git is required (&gt;= 1.7 for ruby-head)
+ patch is required (for 1.8 rubies and some ruby-head's).
+ ...
+ Additional Dependencies:
+ # For Ruby / Ruby HEAD (MRI, Rubinius, &amp; REE), install the following:
+ ruby: /usr/bin/apt-get install build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion
+</code></p>
+
+<p>Usually you have to install this:
+<code>
+sudo apt-get install build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion
+</code></p></li>
+<li><p>Finally define the default ruby version, in order to load it automatically</p>
+
+<p><code>
+$ rvm use &lt;version&gt; --default
+</code></p></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>

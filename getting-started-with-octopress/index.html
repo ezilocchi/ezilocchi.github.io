@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Getting Started With Octopress - Just Some More Devs Ideas</title>
+  <meta name="author" content="Emiliano Zilocchi">
+
+  
+  <meta name="description" content="This is just some thoughts after my experience of migrating my blogging platform from Wordpress to Octopress. For those who have never heard about it &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ezilocchi.github.io/getting-started-with-octopress">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Just Some More Devs Ideas" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-48332293-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Just Some More Devs Ideas</a></h1>
+  
+    <h2>By Emiliano Zilocchi</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:ezilocchi.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Getting Started With Octopress</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-03T00:06:42-03:00" pubdate data-updated="true">Apr 3<span>rd</span>, 2014</time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://ezilocchi.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This is just some thoughts after my experience of migrating my blogging platform from <strong>Wordpress</strong> to <strong>Octopress</strong>. For those who have never heard about it, <strong>Octopress</strong> is basically a tunned Jeckely for hackers with a set of plugins ready to use. The big goal of these blogging platforms is that you can write your posts using <strong>Markdown</strong> language instead of plain HTML or some word like editor (If you are used to write github <strong>README.md</strong> file, you will love it!). In this way it transforms the act of writing a post into a programming experience.</p>
+
+<p>You can find the <a href="http://octopress.org/docs/setup/">installation</a> and <a href="http://octopress.org/docs/deploying/">deployment</a> instructions at the official <a href="http://octopress.org/">website</a>.</p>
+
+<h3>Things that I did right after the standard installation</h3>
+
+<ul>
+<li>Set aside config for different pages.</li>
+<li>Configure some built-in <strong>Octopress</strong> plugins.</li>
+<li>Enable comments through <a href="http://disqus.com/">disqus</a>.</li>
+<li>Create and configure a Google Analytics account.</li>
+<li>Configure the <strong>about me</strong> at the right side bar.</li>
+</ul>
+
+
+<!-- more -->
+
+
+<h3>Set aside config for different pages</h3>
+
+<p>There are a couple of entries in the <code>_config.yml</code> file that you can modify in order to set different aside (right barmenu) on different pages. The most common distintion is between the index (where you usually show a summary for the last 10 posts) and the post page. For this example you have to modify <code>blog_index_asides</code> and <code>post_asides</code>.</p>
+
+<h3>Configure some built-in Octopress plugins</h3>
+
+<p>On this step you will set the basic configuration for integrate.
+<strong>Google+</strong>, <strong>Twitter</strong>, <strong>Facebook</strong>, <strong>Github</strong>. This step it&rsquo;s very easy just follow the <a href="http://octopress.org/docs/configuring/">official documentation</a> for it.</p>
+
+<h3>Create a Disqus account and configure it</h3>
+
+<p>The standard way of making your posts commetable in <strong>Octopress</strong> is configuring <strong>disqus</strong> for it. This is a website that will manage your comments for you, so you will be able to migrate your blogging plataform in a much easier way. The only thing you have to do is to <a href="https://disqus.com/profile/signup/">create an account</a> and then configure it on <strong>Octopress</strong>. In order to do this you have to set these two variables in the <code>_config.yml</code> file:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>disqus_show_comment_count: true
+</span><span class='line'>disqus_short_name: YOUR_DISQUS_ACCOUNT</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally make sure that your blog entries have the <code>comments: true</code> option on top.</p>
+
+<h3>Configure the blog domain</h3>
+
+<p>NOTE: I&rsquo;m using github pages for hosting and Go Daddy to get my domain. Other deployment strategies can be found <a href="http://octopress.org/docs/deploying/">here</a>.</p>
+
+<ul>
+<li>Ceate a <code>CNAME</code> file with your domain and put it into the <code>source</code> folder. Then push it <code>git push origin source</code> and deploy your changes <code>bundle rake deploy</code>.</li>
+<li>Configure your domain provider (<a href="http://godaddy.com">Godaddy</a> in my case) to tell it where your application is hosted.</li>
+<li>Finally we have to wait for the DNS to be updated. This could take a few minutes, so be patient.</li>
+</ul>
+
+
+<h3>Configure Google Analytics</h3>
+
+<p>First you have to configure your site in Google Analytics anf get the Google Analytic ID for it. Then go to the <code>_config.yml</code> file and set it like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>google_analytics_tracking_id: YOUR_APP_ANALYTIC_ID</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Again this will take some time, so be patient.</p>
+
+<h3>Configure the &ldquo;about me&rdquo; at the right side bar so you can show who you are</h3>
+
+<p><strong>Octopress</strong> (at least the version I&rsquo;m using) already comes with a aside partial <code>/source/_includes/custom/asides/about.html</code>. There you can write your About Me section and the configure it to be shown as any aside in the <code>_config.yml</code>. In my case I&rsquo;m showing it in the <code>posts_index_page</code>, just next to the last 10 posts summury.</p>
+
+<p>NOTE: For those who come from <strong>Wordpress</strong> and are used to <a href="http://gravatar.com">gravatar</a>, I&rsquo;ve created a jQuery plugin for it. You can find it on the <a href="http://plugins.jquery.com/gravatar/">jQuery plugin repo</a> and <a href="https://github.com/ezilocchi/jquery-gravatar/">Github</a>.</p>
+
+<figure class='code'><figcaption><span>About Me partial (about.html)</span> <a href='/downloads/code/about.html'>download</a></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;{{ root_url }}/javascripts/jquery.gravatar.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script&gt;</span>
+</span><span class='line'>  <span class="nx">jQuery</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.gravatar&#39;</span><span class="p">).</span><span class="nx">gravatar</span><span class="p">(</span><span class="s1">&#39;ezilocchi&#39;</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;section&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;h1&gt;</span>About Me<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;gravatar&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;displayName&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;email&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;thumbnailUrl&quot;</span> <span class="na">style=</span><span class="s">&quot;width:40%; float:left; padding-top:10px&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;urls&quot;</span> <span class="na">style=</span><span class="s">&quot;width:60%; float:left&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;p&gt;</span>I&#39;m currently working at <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;https://twitter.com/stackbuilders&quot;</span> <span class="na">target=</span><span class="s">&quot;_blank&quot;</span><span class="nt">&gt;</span>@stackbuilders<span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+</span><span class='line'><span class="nt">&lt;/section&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Conclusion</h3>
+
+<p>What I really like about <strong>Octopress</strong> it&rsquo;s the way that you write posts, it&rsquo;s just like programming. You don&rsquo;t need to use any specific tool of editor, just your favorite Editor or IDE :)</p>
+
+<p>BTW, since I&rsquo;m hosting <a href="https://github.com/ezilocchi/ezilocchi.github.io">my blog</a> on github, you are able to take a look at it.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Emiliano Zilocchi</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-03T00:06:42-03:00" pubdate data-updated="true">Apr 3<span>rd</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/blogging/'>Blogging</a>, <a class='category' href='/blog/categories/tools/'>Tools</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ezilocchi.github.io/getting-started-with-octopress/" data-via="ezilocchi" data-counturl="http://ezilocchi.github.io/getting-started-with-octopress/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/getting-started-with-puppet-and-rails/" title="Previous Post: Getting Started with Puppet and Rails">&laquo; Getting Started with Puppet and Rails</a>
+      
+      
+        <a class="basic-alignment right" href="/managing-sidekiq-with-upstart/" title="Next Post: Managing Sidekiq with Upstart">Managing Sidekiq with Upstart &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/managing-sidekiq-with-upstart/">Managing Sidekiq With Upstart</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-octopress/">Getting Started With Octopress</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-puppet-and-rails/">Getting Started With Puppet and Rails</a>
+      </li>
+    
+      <li class="post">
+        <a href="/line-too-long-on-jslint-and-jshint/">Line Too Long on jsLint and jsHint</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-rails-4-with-mongodb/">Getting Started Rails 4 With Mongodb</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/ezilocchi?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Emiliano Zilocchi -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'ezilocchi';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://ezilocchi.github.io/getting-started-with-octopress/';
+        var disqus_url = 'http://ezilocchi.github.io/getting-started-with-octopress/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

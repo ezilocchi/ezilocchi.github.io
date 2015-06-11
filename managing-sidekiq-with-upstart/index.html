@@ -1,0 +1,397 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Managing Sidekiq With Upstart - Just Some More Devs Ideas</title>
+  <meta name="author" content="Emiliano Zilocchi">
+
+  
+  <meta name="description" content="This post has started as a research on How to start Sidekiq on a system reboot. After read blogs and try different approaches we ended with Upstart, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ezilocchi.github.io/managing-sidekiq-with-upstart">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Just Some More Devs Ideas" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-48332293-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Just Some More Devs Ideas</a></h1>
+  
+    <h2>By Emiliano Zilocchi</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:ezilocchi.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Managing Sidekiq With Upstart</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-10-10T15:47:53-03:00" pubdate data-updated="true">Oct 10<span>th</span>, 2014</time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://ezilocchi.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This post has started as a research on <strong>How to start Sidekiq on a system reboot</strong>. After read blogs and try different approaches we ended with Upstart, that is the new way of managing jobs on the Ubuntu platform (Actually not so new, it was included on the standard releases since 10.04 I think). With it you basically define a standard <strong>Ubuntu Job</strong> and then you can just:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo service sidekiq [start | stop | restart | status]</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We have a quite standard Rails stack that involves:</p>
+
+<ul>
+<li><strong>Ubuntu 12.04</strong> LTS</li>
+<li><strong>Sidekiq</strong> with <strong>Redis</strong></li>
+<li><a href="http://rvm.io/">RVM</a> to manage our ruby versions (with <a href="https://github.com/sstephenson/rbenv">rbenv</a> you can use the <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> on the official sidekiq github repo)</li>
+<li><strong>Capistrano</strong> for deploying the application</li>
+</ul>
+
+
+<!-- more -->
+
+
+<p>The only thing to do in order to get your new job up and running, it&rsquo;s create a conf file under <code>/etc/init</code> directory. The file name will be the job name that you will <code>[start | stop | restart | status]</code> later.</p>
+
+<p>The structure of this file must follow the Upstart DSL (you can see different example on <code>/etc/init</code> directory and on the <a href="http://upstart.ubuntu.com/cookbook/">official documentation</a>).</p>
+
+<p>For our purpose we are going to create a file <code>/etc/init/sidekiq.conf</code> so you can run <code>sudo service sidekiq [start | stop | restart | status]</code> and at the same time we can tell Upstart that it should start everytime the <strong>system boot</strong>.</p>
+
+<p>On my case I used this <a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">example</a> as a starting point adapting it to RVM (note that it uses <strong>rbenv</strong>). On the other hand this script was not thought to start sidekiq when the <strong>OS is booted</strong> but that is a quite simple thing, just add <code>start on startup</code></p>
+
+<figure class='code'><figcaption><span>/etc/init/sidekiq.conf</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># Just a custom description for our Job</span>
+</span><span class='line'>description <span class="s2">&quot;Sidekiq Background Worker&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># On which conditions the job should start. In this case it&#39;s very simple: On the system startup (this is basically when the system is booted)</span>
+</span><span class='line'>start on startup
+</span><span class='line'>
+</span><span class='line'><span class="c"># On which conditions the job should stop. In this case when the system reboot (http://upstart.ubuntu.com/cookbook/#runlevels)</span>
+</span><span class='line'>stop on runlevel <span class="o">[</span>06<span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># This are the User and User Group that will be used to run the Job. On our case it should be the user that we have set on our capistrano script for instance.</span>
+</span><span class='line'><span class="c"># You can check at `config/deploy/&lt;environment&gt;.rb` on this line `server &lt;some_ip_addreess&gt;, user: &lt;deploy_user&gt;`</span>
+</span><span class='line'>
+</span><span class='line'>setuid deploy_user
+</span><span class='line'>setgid deploy_group
+</span><span class='line'>
+</span><span class='line'><span class="c"># This indicate that we want to restart the Job if it crashes</span>
+</span><span class='line'>respawn
+</span><span class='line'>respawn limit 3 30
+</span><span class='line'>
+</span><span class='line'><span class="c"># TERM is sent by sidekiqctl when stopping sidekiq.  Without declaring these as normal exit codes, it just respawns.</span>
+</span><span class='line'>normal <span class="nb">exit </span>0 TERM
+</span><span class='line'>
+</span><span class='line'>script
+</span><span class='line'><span class="c"># this script runs in /bin/sh by default</span>
+</span><span class='line'><span class="c"># respawn as bash so we can source in RVM</span>
+</span><span class='line'><span class="nb">exec</span> /bin/bash <span class="s">&lt;&lt;EOT</span>
+</span><span class='line'><span class="s">  # use syslog for logging</span>
+</span><span class='line'><span class="s">  exec &amp;&gt; /dev/kmsg</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  # Jump into the capistrano deployment directory</span>
+</span><span class='line'><span class="s">  cd /var/projects/&lt;YOUR_PROJECT_DIR&gt;/current</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  # Start Sidekiq through RVM. Note that I&#39;m using the standard Capistrano paths</span>
+</span><span class='line'><span class="s">  exec ~/.rvm/bin/rvm-shell -c &#39;bundle exec sidekiq --index 0 --environment &lt;environemnt&gt; --logfile /var/projects/&lt;YOUR_PROJECT_DIR&gt;/current/log/sidekiq.log&#39;</span>
+</span><span class='line'><span class="s">EOT</span>
+</span><span class='line'>end script
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One more thing that might be helpful is how to debug this in case it doesn&rsquo;t work on the first try or if you need to adapt it. Well you can just
+<code>tail -f /var/log/syslog</code> and see the errors.</p>
+
+<p>That is pritty much it, now your Sidekiq process is being managed as a standard Ubuntu Job.</p>
+
+<p>Resources:</p>
+
+<ul>
+<li><a href="https://github.com/mperham/sidekiq/tree/master/examples/upstart">https://github.com/mperham/sidekiq/tree/master/examples/upstart</a></li>
+<li><a href="http://upstart.ubuntu.com/getting-started.html">http://upstart.ubuntu.com/getting-started.html</a></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Emiliano Zilocchi</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-10-10T15:47:53-03:00" pubdate data-updated="true">Oct 10<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/rails/'>Rails</a>, <a class='category' href='/blog/categories/sidekiq/'>Sidekiq</a>, <a class='category' href='/blog/categories/ubuntu/'>Ubuntu</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ezilocchi.github.io/managing-sidekiq-with-upstart/" data-via="ezilocchi" data-counturl="http://ezilocchi.github.io/managing-sidekiq-with-upstart/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/getting-started-with-octopress/" title="Previous Post: Getting Started with Octopress">&laquo; Getting Started with Octopress</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/managing-sidekiq-with-upstart/">Managing Sidekiq With Upstart</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-octopress/">Getting Started With Octopress</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-with-puppet-and-rails/">Getting Started With Puppet and Rails</a>
+      </li>
+    
+      <li class="post">
+        <a href="/line-too-long-on-jslint-and-jshint/">Line Too Long on jsLint and jsHint</a>
+      </li>
+    
+      <li class="post">
+        <a href="/getting-started-rails-4-with-mongodb/">Getting Started Rails 4 With Mongodb</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/ezilocchi?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Emiliano Zilocchi -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'ezilocchi';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://ezilocchi.github.io/managing-sidekiq-with-upstart/';
+        var disqus_url = 'http://ezilocchi.github.io/managing-sidekiq-with-upstart/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
